@@ -117,6 +117,11 @@ calculated_field tcp.checksum {
 
 
 
+register state {
+	width : 8;
+	// paired w/ meters above
+	instance_count : 1;
+}
 
 field_list_calculation ipv4_checksum {
     input {

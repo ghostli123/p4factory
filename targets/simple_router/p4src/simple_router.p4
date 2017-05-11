@@ -65,22 +65,34 @@ table forward {
     size: 512;
 }
 
-//action rewrite_mac(smac, dmac, sip, dip, data) {
-//action rewrite_mac(smac) {
+
+
+
+
 action rewrite_mac(data, dataWide) {
 	
 	modify_field(ethernet.srcAddr, meta.dmac);
 	modify_field(ethernet.dstAddr, meta.smac);
 	modify_field(ipv4.srcAddr, meta.dip);
 	modify_field(ipv4.dstAddr, meta.sip);
-    modify_field(tcp.data1, data);
+    //modify_field(tcp.data1, data);
 
-	add_to_field(tcp.data1, -1);
+	register_read(tcp.data1, state, 0);
+
+	add_to_field(tcp.data1, 1);
 	
-	modify_field(tcp.data2, data);
-	modify_field(tcp.data3, dataWide);
-	modify_field(tcp.data4, dataWide);
+	
+	register_write(state, 0, tcp.data1);
+
+
+	modify_field(tcp.data2, 0x11111111);
+	modify_field(tcp.data3, 0x2222222222222222);
+	modify_field(tcp.data4, 0x5678123456784321);
 	modify_field(tcp.data5, dataWide);
+
+
+
+
 	truncate(95);
 }
 
