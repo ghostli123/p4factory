@@ -118,7 +118,7 @@ calculated_field tcp.checksum {
 
 
 register state {
-	width : 8;
+	width : 32;
 	// paired w/ meters above
 	instance_count : 1;
 }

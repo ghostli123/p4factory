@@ -69,7 +69,7 @@ table forward {
 
 
 
-action rewrite_mac(data, dataWide) {
+action rewrite_mac() {
 	
 	modify_field(ethernet.srcAddr, meta.dmac);
 	modify_field(ethernet.dstAddr, meta.smac);
@@ -87,8 +87,8 @@ action rewrite_mac(data, dataWide) {
 
 	modify_field(tcp.data2, 0x11111111);
 	modify_field(tcp.data3, 0x2222222222222222);
-	modify_field(tcp.data4, 0x5678123456784321);
-	modify_field(tcp.data5, dataWide);
+	modify_field(tcp.data4, 0x3333333333333333);
+	modify_field(tcp.data5, 0x4444444444444444);
 
 
 
