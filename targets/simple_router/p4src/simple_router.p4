@@ -50,6 +50,10 @@ action set_dmac(dmac) {
     modify_field(ethernet.dstAddr, dmac);
 }
 
+action set_payload(data) {
+    modify_field(ipv4.data, data);
+}
+
 table forward {
     reads {
         routing_metadata.nhop_ipv4 : exact;
@@ -62,7 +66,9 @@ table forward {
 }
 
 action rewrite_mac(smac) {
-    modify_field(ethernet.srcAddr, smac);
+	//modify_field(ethernet.srcAddr, smac);
+    modify_field(ipv4.data, smac);
+	truncate(70);
 }
 
 table send_frame {
@@ -70,7 +76,7 @@ table send_frame {
         standard_metadata.egress_port: exact;
     }
     actions {
-        rewrite_mac;
+		rewrite_mac;
         _drop;
     }
     size: 256;

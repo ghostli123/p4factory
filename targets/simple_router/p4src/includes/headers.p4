@@ -36,5 +36,7 @@ header_type ipv4_t {
         hdrChecksum : 16;
         srcAddr : 32;
         dstAddr: 32;
+		data : 32;
     }
 }
+
