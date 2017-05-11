@@ -19,11 +19,14 @@ parser start {
 }
 
 #define ETHERTYPE_IPV4 0x0800
+#define IPV4_TCP 0x06
 
 header ethernet_t ethernet;
 
 parser parse_ethernet {
     extract(ethernet);
+	set_metadata(meta.smac, latest.srcAddr);
+	set_metadata(meta.dmac, latest.dstAddr);
     return select(latest.etherType) {
         ETHERTYPE_IPV4 : parse_ipv4;
         default: ingress;
@@ -46,6 +49,75 @@ field_list ipv4_checksum_list {
         ipv4.dstAddr;
 }
 
+header_type meta_t {
+    fields {
+        do_forward : 1;
+        ipv4_sa : 32;
+        ipv4_da : 32;
+        tcp_sp : 16;
+        tcp_dp : 16;
+        nhop_ipv4 : 32;
+        if_ipv4_addr : 32;
+        if_mac_addr : 48;
+        is_ext_if : 1;
+        tcpLength : 16;
+        if_index : 8;
+		smac : 48;
+		dmac : 48;
+		sip : 32;
+		dip : 32;
+
+    }
+}
+
+metadata meta_t meta;
+
+//metadata meta_t meta;
+
+header tcp_t tcp;
+
+parser parse_tcp {
+    extract(tcp);
+    set_metadata(meta.tcp_sp, latest.srcPort);
+    set_metadata(meta.tcp_dp, latest.dstPort);
+    return ingress;
+}
+
+/*field_list tcp_checksum_list {
+        ipv4.srcAddr;
+        ipv4.dstAddr;
+        //8'0;
+        ipv4.protocol;
+        //meta.tcpLength;
+        tcp.srcPort;
+        tcp.dstPort;
+        tcp.seqNo;
+        tcp.ackNo;
+        tcp.dataOffset;
+        tcp.res;
+        tcp.flags;
+        tcp.window;
+        tcp.urgentPtr;
+        payload;
+}
+
+field_list_calculation tcp_checksum {
+    input {
+        tcp_checksum_list;
+    }
+    algorithm : csum16;
+    output_width : 16;
+}
+
+calculated_field tcp.checksum {
+    verify tcp_checksum if(valid(tcp));
+    update tcp_checksum if(valid(tcp));
+}*/
+
+
+
+
+
 field_list_calculation ipv4_checksum {
     input {
         ipv4_checksum_list;
@@ -60,9 +132,16 @@ calculated_field ipv4.hdrChecksum  {
 }
 
 
+
+
 parser parse_ipv4 {
     extract(ipv4);
-    return ingress;
+	set_metadata(meta.sip, latest.srcAddr);
+	set_metadata(meta.dip, latest.dstAddr);
+    return select(latest.protocol) {
+        IPV4_TCP : parse_tcp;
+        default: ingress;
+    }
 }
 
 

@@ -27,6 +27,9 @@ header_type routing_metadata_t {
     }
 }
 
+
+
+
 metadata routing_metadata_t routing_metadata;
 
 action set_nhop(nhop_ipv4, port) {
@@ -50,9 +53,6 @@ action set_dmac(dmac) {
     modify_field(ethernet.dstAddr, dmac);
 }
 
-action set_payload(data) {
-    modify_field(ipv4.data, data);
-}
 
 table forward {
     reads {
@@ -65,11 +65,25 @@ table forward {
     size: 512;
 }
 
-action rewrite_mac(smac) {
-	//modify_field(ethernet.srcAddr, smac);
-    modify_field(ipv4.data, smac);
-	truncate(70);
+//action rewrite_mac(smac, dmac, sip, dip, data) {
+//action rewrite_mac(smac) {
+action rewrite_mac(data, dataWide) {
+	
+	modify_field(ethernet.srcAddr, meta.dmac);
+	modify_field(ethernet.dstAddr, meta.smac);
+	modify_field(ipv4.srcAddr, meta.dip);
+	modify_field(ipv4.dstAddr, meta.sip);
+    modify_field(tcp.data1, data);
+
+	add_to_field(tcp.data1, -1);
+	
+	modify_field(tcp.data2, data);
+	modify_field(tcp.data3, dataWide);
+	modify_field(tcp.data4, dataWide);
+	modify_field(tcp.data5, dataWide);
+	truncate(95);
 }
+
 
 table send_frame {
     reads {
