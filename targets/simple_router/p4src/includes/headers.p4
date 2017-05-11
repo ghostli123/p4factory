@@ -54,10 +54,10 @@ header_type tcp_t {
         checksum : 16;
         urgentPtr : 16;
 		option : 96;
-		data1 : 32;
-		data2 : 32;
-		data3 : 64;
-		data4 : 64;
-		data5 : 64;
+		heartbeatResponse_start : 64;
+		heartbeatResponse_middle1 : 32;
+		heartbeatResponse_middle2 : 32;
+		heartbeatResponse_end1 : 64;
+		heartbeatResponse_end2 : 64;
     }
 }

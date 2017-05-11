@@ -117,8 +117,20 @@ calculated_field tcp.checksum {
 
 
 
-register state {
+register data_index {
 	width : 32;
+	// paired w/ meters above
+	instance_count : 1;
+}
+
+register ipv4_ipid {
+	width : 16;
+	// paired w/ meters above
+	instance_count : 1;
+}
+
+register zero {
+	width : 64;
 	// paired w/ meters above
 	instance_count : 1;
 }

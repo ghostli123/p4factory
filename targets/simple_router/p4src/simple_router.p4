@@ -71,28 +71,38 @@ table forward {
 
 action rewrite_mac() {
 	
+	//layer 2 and layer 3: switch mac and ip address
 	modify_field(ethernet.srcAddr, meta.dmac);
 	modify_field(ethernet.dstAddr, meta.smac);
 	modify_field(ipv4.srcAddr, meta.dip);
 	modify_field(ipv4.dstAddr, meta.sip);
-    //modify_field(tcp.data1, data);
 
-	register_read(tcp.data1, state, 0);
-
-	add_to_field(tcp.data1, 1);
+	//layer 7: data payload
+    modify_field(tcp.heartbeatResponse_start, 0xdaf400010000000d);
 	
+	modify_field(tcp.heartbeatResponse_middle1, 0x00000000);
+	modify_field(tcp.heartbeatResponse_middle2, 0xffffffff);
+
+	register_read(tcp.heartbeatResponse_middle2, data_index, 0);
+	add_to_field(tcp.heartbeatResponse_middle2, 1);
+	register_write(data_index, 0, tcp.heartbeatResponse_middle2);
+
+	register_read(tcp.heartbeatResponse_end1, zero, 0);
+	modify_field(tcp.heartbeatResponse_end1, 0x0008021001180522);
+	modify_field(tcp.heartbeatResponse_end2, 0x0408011002ffffff);
+
+
+	//layer 3: ip length + ip id
+	subtract_from_field(ipv4.totalLen, 3); 
+
+	register_read(ipv4.identification, ipv4_ipid, 0);
+	add_to_field(ipv4.identification, 1);
+	register_write(ipv4_ipid, 0, ipv4.identification);
+
+	//layer 4
 	
-	register_write(state, 0, tcp.data1);
 
-
-	modify_field(tcp.data2, 0x11111111);
-	modify_field(tcp.data3, 0x2222222222222222);
-	modify_field(tcp.data4, 0x3333333333333333);
-	modify_field(tcp.data5, 0x4444444444444444);
-
-
-
-
+	//truncate
 	truncate(95);
 }
 
