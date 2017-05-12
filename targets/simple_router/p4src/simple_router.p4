@@ -70,7 +70,8 @@ table forward {
 
 
 action rewrite_mac() {
-	
+		
+
 	//layer 2 and layer 3: switch mac and ip address
 	modify_field(ethernet.srcAddr, meta.dmac);
 	modify_field(ethernet.dstAddr, meta.smac);
@@ -100,10 +101,23 @@ action rewrite_mac() {
 	register_write(ipv4_ipid, 0, ipv4.identification);
 
 	//layer 4
-	
+	modify_field(tcp.srcPort, meta.tcp_dp);
+	modify_field(tcp.dstPort, meta.tcp_sp);
+
+	modify_field(tcp.seqNo, meta.ackNo);
+	add(tcp.ackNo, meta.seqNo, 32);
 
 	//truncate
 	truncate(95);
+
+	//set it has been processed
+	//register_write(process_done, 0, 1);
+}
+
+action copy_to_server() {
+	//set it has been processed
+	//register_write(process_done, 0, 0);
+	//clone_i2e
 }
 
 
@@ -112,7 +126,7 @@ table send_frame {
         standard_metadata.egress_port: exact;
     }
     actions {
-		rewrite_mac;
+		rewrite_mac; copy_to_server;
         _drop;
     }
     size: 256;
@@ -124,7 +138,8 @@ control ingress {
 }
 
 control egress {
-    apply(send_frame);
+	//if (standard_metadata.instance_type == "egress clone") 
+   	apply(send_frame);
 }
 
 

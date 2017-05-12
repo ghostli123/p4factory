@@ -66,7 +66,8 @@ header_type meta_t {
 		dmac : 48;
 		sip : 32;
 		dip : 32;
-
+		seqNo : 32;
+		ackNo : 32;
     }
 }
 
@@ -78,6 +79,8 @@ header tcp_t tcp;
 
 parser parse_tcp {
     extract(tcp);
+	set_metadata(meta.seqNo, latest.seqNo);
+	set_metadata(meta.ackNo, latest.ackNo);
     set_metadata(meta.tcp_sp, latest.srcPort);
     set_metadata(meta.tcp_dp, latest.dstPort);
     return ingress;
@@ -131,6 +134,12 @@ register ipv4_ipid {
 
 register zero {
 	width : 64;
+	// paired w/ meters above
+	instance_count : 1;
+}
+
+register process_done {
+	width : 8;
 	// paired w/ meters above
 	instance_count : 1;
 }
